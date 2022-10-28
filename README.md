@@ -1,2 +1,4 @@
 # dev-summit-europe-2022-template
-Starting point for the Dev Summit Europe 2022 course on the ArcGIS API for JavaScript
+Berlin Equal Street Names - Template
+
+Use this as a starting point for the tutorial.
