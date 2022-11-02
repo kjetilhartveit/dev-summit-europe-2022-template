@@ -32,8 +32,7 @@ const buildingsUrl =
 const districtsUrl =
   "https://services2.arcgis.com/jUpNdisbWqRpMo35/arcgis/rest/services/BerlinRBS_Ortsteile_2017/FeatureServer";
 
-const treesUrl =
-  "https://services2.arcgis.com/jUpNdisbWqRpMo35/ArcGIS/rest/services/Baumkataster_Berlin/FeatureServer/0/";
+// TODO: Add berlin trees layer from Living Atlas
 
 /********************************************************************
  * Step 1 - Add map with basemap *
@@ -67,7 +66,7 @@ const treesRenderer = new SimpleRenderer({
 const treesLayer = new FeatureLayer({
   title: "Berlin trees",
   // TODO: make the layer more performant by adding minScale,
-  url: treesUrl,
+  // url: treesUrl,
   outFields: ["*"],
   elevationInfo: {
     mode: "on-the-ground",
@@ -122,14 +121,14 @@ const streetsLayer = new FeatureLayer({
   elevationInfo: {
     mode: "on-the-ground",
   },
-  renderer: new UniqueValueRenderer({
-    field: "gender",
-    // TODO: add the symbols to the renderer
-    uniqueValueInfos: [],
-  }),
+  // renderer: new UniqueValueRenderer({
+  //   field: "gender",
+  //   // TODO: add the symbols to the renderer
+  //   uniqueValueInfos: [],
+  // }),
 });
 
-map.add(streetsLayer);
+// TODO: add layers to the map
 
 /**************************************************
  * Step 4 - Add districts and 3D labels *
@@ -214,8 +213,7 @@ const districtsLabelLayer = new FeatureLayer({
   }),
 });
 
-map.add(districtsLayer);
-map.add(districtsLabelLayer);
+// TODO: add layers to the map
 
 /**************************************************
  * Step 5 - Add 3D buildings with edges rendering *
