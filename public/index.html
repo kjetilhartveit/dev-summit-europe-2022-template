@@ -4,27 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Berlin Equal Street Names</title>
-    <!-- Calcite
+
+    <!-- Calcite -->
     <link
       rel="stylesheet"
       type="text/css"
       href="https://js.arcgis.com/calcite-components/1.0.0-beta.95/calcite.css"
     />
     <script
-      type="module"
+      type="application/javascript"
       src="https://js.arcgis.com/calcite-components/1.0.0-beta.95/calcite.esm.js"
-    ></script> -->
-    <link rel="stylesheet" href="/css/styles.css" />
+    ></script>
+
+    <link rel="stylesheet" href="/index.css" />
     <link
       rel="stylesheet"
       href="https://js.arcgis.com/4.24/@arcgis/core/assets/esri/themes/dark/main.css"
     />
   </head>
-  <body>
+  <body class="calcite-theme-dark">
+    <calcite-shell class="calcite-presentation" content-behind id="shell">
+      <div class="temporary-header" slot="header">
+        Berlin Equal Street Names
+        <div id="search-widget-container"></div>
+      </div>
+    </calcite-shell>
     <div id="viewDiv"></div>
-    <!-- <div id="chart">
+    <div id="chart">
       <canvas id="chart-canvas"></canvas>
-    </div> -->
-    <script src="/js/app.bundle.js"></script>
+    </div>
+    <script src="/index.js"></script>
   </body>
 </html>

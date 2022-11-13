@@ -52,7 +52,7 @@ module.exports = {
       inlineSource: '.(css)$'
     }),
     new MiniCssExtractPlugin({
-      filename: "[name].[chunkhash].css",
+      filename: "[name].css",
       chunkFilename: "[id].css"
     })
   ]

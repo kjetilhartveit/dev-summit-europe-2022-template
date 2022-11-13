@@ -1,5 +1,6 @@
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
+import SceneView from "@arcgis/core/views/SceneView";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import SceneLayer from "@arcgis/core/layers/SceneLayer";
 
@@ -12,11 +13,16 @@ import LineSymbol3D from "@arcgis/core/symbols/LineSymbol3D";
 import PathSymbol3DLayer from "@arcgis/core/symbols/PathSymbol3DLayer";
 import PolygonSymbol3D from "@arcgis/core/symbols/PolygonSymbol3D";
 import WebStyleSymbol from "@arcgis/core/symbols/WebStyleSymbol";
+import LineStylePattern3D from "@arcgis/core/symbols/patterns/LineStylePattern3D";
 import LineCallout3D from "@arcgis/core/symbols/callouts/LineCallout3D";
 import PointSymbol3D from "@arcgis/core/symbols/PointSymbol3D";
 import LabelSymbol3D from "@arcgis/core/symbols/LabelSymbol3D";
 import TextSymbol3DLayer from "@arcgis/core/symbols/TextSymbol3DLayer";
 import ObjectSymbol3DLayer from "@arcgis/core/symbols/ObjectSymbol3DLayer";
+import ExpressionInfo from "@arcgis/core/popup/ExpressionInfo";
+import Search from "@arcgis/core/widgets/Search";
+import Home from "@arcgis/core/widgets/Home";
+import LayerList from "@arcgis/core/widgets/LayerList";
 
 import PopupTemplate from "@arcgis/core/PopupTemplate";
 
@@ -32,25 +38,63 @@ const buildingsUrl =
 const districtsUrl =
   "https://services2.arcgis.com/jUpNdisbWqRpMo35/arcgis/rest/services/BerlinRBS_Ortsteile_2017/FeatureServer";
 
-// TODO: Add berlin trees layer from Living Atlas
+const treesUrl =
+  "https://services2.arcgis.com/jUpNdisbWqRpMo35/arcgis/rest/services/Baumkataster_Berlin/FeatureServer";
 
 /********************************************************************
  * Step 1 - Add map with basemap *
  ********************************************************************/
+
+// // set the shaded relief renderer parameters
+// const renderer = new RasterShadedReliefRenderer({
+//   altitude: 45,
+//   azimuth: 315,
+//   hillshadeType: hillshadeType,
+//   zFactor: 1,
+//   scalingType: "adjusted",
+//   colorRamp: colorRamp
+// });
+
+// const layer = new ImageryTileLayer({
+//   url: treesUrl,
+//   renderer: renderer
+// });
+
 const map = new Map({
-  // TODO: find a basemap of your choice
-  basemap: "topo-vector",
+  //basemap: "hybrid",
+  basemap: "dark-gray-vector",
+  ground: 'world-elevation'
+  // layers: [layer]
   // TODO: add elevation
 });
 
-const view = new MapView({
-  container: document.querySelector("#viewDiv") as HTMLDivElement,
-  zoom: 4,
-  center: [15, 65], // TODO: add longitude, latitude of Berlin here,
-  map: map,
-});
+const berlinCoords = {
+  longitude: 13.404954,
+  latitude: 52.520008
+};
 
-// TODO: transform MapView to SceneView
+const view = new SceneView({
+  container: document.querySelector("#viewDiv") as HTMLDivElement,
+  center: [berlinCoords.longitude, berlinCoords.latitude],
+  // zoom: 4,
+  scale: 2500,
+  map: map,
+
+  /* camera: {
+    tilt: 70,
+    // fov: 150,
+    position: {
+      z: 100,
+      longitude: berlinCoords.longitude,
+      latitude: berlinCoords.latitude
+    }
+  },*/
+
+  environment: {
+    atmosphereEnabled: false,
+    starsEnabled: false,
+  }
+});
 
 /**************************************************
  * Step 2 - Add a trees layer with a web style symbol *
@@ -58,15 +102,15 @@ const view = new MapView({
 
 const treesRenderer = new SimpleRenderer({
   symbol: new WebStyleSymbol({
-    // name: "", // TODO: find a web style symbol for a realisitic tree
-    // styleName: "",
+    name: "Populus",
+    styleName: "EsriRealisticTreesStyle",
   }),
 });
 
 const treesLayer = new FeatureLayer({
   title: "Berlin trees",
   // TODO: make the layer more performant by adding minScale,
-  // url: treesUrl,
+  url: treesUrl,
   outFields: ["*"],
   elevationInfo: {
     mode: "on-the-ground",
@@ -79,8 +123,8 @@ map.add(treesLayer);
 /**************************************************
  * Step 3 - Change the streets renderer to show a 3D line *
  **************************************************/
-const FEMALE_COLOR = ""; // TODO: choose a color
-const MALE_COLOR = ""; // TODO: choose a color
+const FEMALE_COLOR = "red";
+const MALE_COLOR = "blue";
 
 const femaleStreetSymbol = {
   value: "F",
@@ -121,14 +165,13 @@ const streetsLayer = new FeatureLayer({
   elevationInfo: {
     mode: "on-the-ground",
   },
-  // renderer: new UniqueValueRenderer({
-  //   field: "gender",
-  //   // TODO: add the symbols to the renderer
-  //   uniqueValueInfos: [],
-  // }),
+  renderer: new UniqueValueRenderer({
+    field: "gender",
+    uniqueValueInfos: [femaleStreetSymbol, maleStreetSymbol],
+  }),
 });
 
-// TODO: add layers to the map
+map.add(streetsLayer);
 
 /**************************************************
  * Step 4 - Add districts and 3D labels *
@@ -148,10 +191,9 @@ const districtsLayer = new FeatureLayer({
           outline: {
             color: "white",
             size: "2px",
-            /* TODO: find a line pattern
             pattern: new LineStylePattern3D({
-              style: "", 
-            }),*/
+              style: "dash", 
+            }),
             patternCap: "round",
           },
         }),
@@ -198,9 +240,9 @@ const districtsLabelLayer = new FeatureLayer({
         }),
       ],
       verticalOffset: {
-        screenLength: 1, // TODO: find a reasonable screen length
-        maxWorldLength: 1, // TODO: find a reasonable max world length
-        minWorldLength: 1, // TODO: find a reasonable min world length
+        screenLength: 100,
+        maxWorldLength: 200,
+        minWorldLength: 100,
       },
       callout: new LineCallout3D({
         size: 1.5,
@@ -213,7 +255,8 @@ const districtsLabelLayer = new FeatureLayer({
   }),
 });
 
-// TODO: add layers to the map
+map.add(districtsLayer);
+map.add(districtsLabelLayer);
 
 /**************************************************
  * Step 5 - Add 3D buildings with edges rendering *
@@ -223,7 +266,7 @@ const buildingSymbol = new MeshSymbol3D({
   symbolLayers: [
     new FillSymbol3DLayer({
       material: {
-        color: [40, 40, 40, 0.5],
+        color: [40, 40, 40, 1],
         colorMixMode: "tint",
       },
       edges: new SolidEdges3D({
@@ -239,7 +282,7 @@ const buildingsLayer = new SceneLayer({
   url: buildingsUrl,
   outFields: ["*"],
   renderer: new SimpleRenderer({
-    // TODO: add the symbol to the renderer
+    symbol: buildingSymbol
   }),
   legendEnabled: false,
 });
@@ -269,30 +312,39 @@ const arcadeExpressionInfos = [
 ];
 
 streetsLayer.popupTemplate = new PopupTemplate({
-  content: "", // TODO: add content to popup template
-  // expressionInfos: {} / TODO: add arcarde expressions to popup template
+  content: `<h1>{expression/title}</h1>
+    <p>{expression/description}</p>
+    <p>Link: <a href="{expression/link}" target="_blank">{expression/link}</a></p>`,
+  expressionInfos: arcadeExpressionInfos.map(infos => new ExpressionInfo(infos))
 });
 
 /**************************************************
  * Step 7 - Find a widget in the docs to add to your app *
  **************************************************/
 
-// TODO: add the search widget
+const searchWidget = new Search({
+  view: view
+});
 
-// TODO: add home widget
+view.ui.add(searchWidget, "top-right");
 
-// TODO: add layer list with legend
-// const layerList = new LayerList({
-//   view: view,
-//   listItemCreatedFunction: (event) => {
-//     const item = event.item;
-//     if (item.layer.type != "group") {
-//       item.panel = { content: "legend", open: true };
-//     }
-//   },
-// });
+const homeWidget = new Home({
+  view: view
+});
 
-// view.ui.add(layerList, "top-right");
+view.ui.add(homeWidget, "top-right");
+
+const layerList = new LayerList({
+  view: view,
+  listItemCreatedFunction: (event) => {
+    const item = event.item;
+    if (item.layer.type != "group") {
+      item.panel = { content: "legend", open: true };
+    }
+  },
+});
+
+view.ui.add(layerList, "top-right");
 
 /**************************************************
  * Step 8 - Add a chart that shows the distribution of the streets by gender *
@@ -330,7 +382,17 @@ view.whenLayerView(streetsLayer).then((layerView) => {
     // Update the chart whenever the user is not interacting with the scene
     () => !layerView.updating,
     async () => {
-      // TODO: query the features & update the chart with the correct numbers
+      const results = await layerView.queryFeatures({
+        geometry: view.extent,
+        returnGeometry: true
+      });
+
+      const graphics = results.features;
+      const getGenderCount = (gender: 'F' | 'M') => graphics.filter(streets => streets.attributes.gender === gender).length;
+      femaleStreetsCounts = getGenderCount('F');
+      maleStreetsCount = getGenderCount('M');
+      chart.data.datasets[0].data = [femaleStreetsCounts, maleStreetsCount];
+      chart.update();
     }
   );
 });
